@@ -45,17 +45,46 @@ void TIM2_PWM_Init(u16 arr,u16 psc)
  
 	TIM_Cmd(TIM2, ENABLE);  //使能TIM2
 	
+	Moter_Control(0, 0);
 }
 
 
-//点击输出函数
+
+//电机输出函数
 void Moter_Control(int left_output, int right_output)
 {
 	if(left_output >= 900)
 		left_output = 899;
+//	else if(left_output <= -600)
+//		left_output = -600;
+	
 	if(right_output >= 900)
 		right_output = 899;
+//	else if(right_output <= -2600)
+//		right_output = -600;
 	
+//	if(left_output >= 0)
+//	{
+//		TIM_SetCompare1(TIM2, left_output);
+//		TIM_SetCompare2(TIM2, 0);
+//	}
+//	else
+//	{
+//		TIM_SetCompare1(TIM2, 0);
+//		TIM_SetCompare2(TIM2, -left_output);
+//	}
+//	
+//	if(right_output >= 0)
+//	{
+//		TIM_SetCompare3(TIM2, right_output);
+//		TIM_SetCompare4(TIM2, 0);
+//	}
+//	else
+//	{
+//		TIM_SetCompare3(TIM2, 0);
+//		TIM_SetCompare4(TIM2, -right_output);
+//	}
+
 	TIM_SetCompare1(TIM2, left_output);
 	TIM_SetCompare4(TIM2, right_output);
 }

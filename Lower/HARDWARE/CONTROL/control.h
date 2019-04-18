@@ -2,47 +2,64 @@
 #define __CONTROL_H_
 #include "sys.h"
 
-//#define PI 3.14159265
-//#define ZHONGZHI 3085
+#define LEFT 1
+#define RIGHT 0
 
-//typedef struct
-//{
-//	
-//	int Set;
-//	int Set_Const;
-//	int Now;
-//	int Out;
-//	float Kp;
-//	float Ki;
-//	float Kd;
-//	float Pout;
-//	float Iout;
-//	float Dout;
-//	float PIDOut;
-//	float Error;
-//	float Last_Error;
-//	float Last2_Error;
-//	float DError;
+typedef struct
+{
+	float Turn_P;
+	float Turn_I;
+	float Turn_D;
+	
+	float Speed_P;
+	float Speed_I;
+	float Speed_D;
+}CAR_PID_S;
 
-//	int Max;
-//	int Min;
-//}S_PID;
+typedef struct
+{
+	float AngleDir;
+	float AngleValue;
+	int FindState;
+	int Distance;
+}CAR_LOCTION_S;
 
-//typedef enum
-//{
-//    STOP = 0,			//停止
-//		START,				//启动
-//  	SWINGUP,			//起摆
-//    BALANCE,			//平衡
-//		POSITION,			//位置
-//    MOTORSTALL,		//电机堵转
-//} SYSTEM_STATE_e;
+typedef struct
+{
+    int Speed_Set;
+	int Left_Speed;
+	int Right_Speed;
+} CAr_SPEED_S;
 
-//extern u8 Flag_Stop,delay_50,delay_flag;   
-//extern S_PID Test;								//测试用
-//extern S_PID Angle;								//角度值
-//extern S_PID Position;						//编码器的脉冲计数
-//extern SYSTEM_STATE_e g_iSystemState;				//全局系统状态
+typedef enum
+{
+    STOP = 0,			//停止
+	START,
+	BACK2CENTER,
+	FINDBEACON
+} Car_State_E;
+
+
+
+
+//车当前的状态
+extern Car_State_E g_iCarState;
+//车的PID参数
+extern CAR_PID_S PID;
+//车的位置
+extern CAR_LOCTION_S CarLoction;
+//车的速度设置
+extern CAr_SPEED_S CarSpeed;
+
+
+void Car_Params_Init(void);
+void Car_Control(void);
+void Speed_Control(void);
+void Turn_Contorl(void);
+void Stop(void);
+void OLED_Show(void);
+	
+
 //void GlobalControl(void);					//全局控制
 //void AngleControl(S_PID * pid);
 //void PositionControl(S_PID * pid);			//转角控制

@@ -4,33 +4,29 @@
 #include "usart.h"
 #include "oled.h"
 #include "pwm.h"
+#include "control.h"
 
 
 int main(void)
 {
-	u8 key_value = 0;
-	//u16 pwm_value = 500;
+	Car_Params_Init();
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 	delay_init();			
 	LED_Init();	
 	KEY_Init();		
 	OLED_Init();	
-	TIM2_PWM_Init(899,0);	
-	uart_init(9600);
+	TIM2_PWM_Init(899,0);		
+	uart_init(115200);
 	delay_ms(1000);   
 		
 	while(1)
 	{		
-		key_value = KEY_Check(1);
-		if(key_value == PRESS)
+		if(ReceiveFlag == 1)
 		{
-			LED_Turn();
+			Car_Control();
+			ReceiveFlag = 0;
 		}
-
-		
-		OLED_ShowNum(0,0,12345,5,16);
-		//LED_Turn();
-		delay_ms(200);
+		OLED_Show();
 	}
 }
 

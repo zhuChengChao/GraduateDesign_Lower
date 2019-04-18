@@ -3,6 +3,7 @@
 #include "string.h"
 #include "stdio.h"  
 #include "led.h"
+#include "control.h"
 
 //////////////////////////////////////////////////////////////////
 //加入以下代码,支持printf函数,而不需要选择use MicroLIB	  
@@ -34,14 +35,6 @@ int fputc(int ch, FILE *f)
 
 
 u8 RxNum = 0;
-//0：帧头     0xa0
-//1
-//2
-//3：
-//4
-//5
-//6
-//7：帧尾0x0a
 u8 RxData[8] = {0};
 u8 ReceiveFlag = 0;
 
@@ -82,66 +75,74 @@ void uart_init(u32 bound)
 	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;//无硬件数据流控制
 	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//收发模式
 
-	USART_Init(USART3, &USART_InitStructure); //初始化串口1
+	USART_Init(USART3, &USART_InitStructure); //初始化串口3
 	USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);//开启串口接受中断
-	USART_Cmd(USART3, ENABLE);                    //使能串口1 
-
+	USART_Cmd(USART3, ENABLE);                    //使能串口3 
 }
 
-void USART3_IRQHandler(void)                	//串口1中断服务程序
+
+
+void USART3_IRQHandler(void)                	//串口3中断服务程序
 {
 	u8 Res,sum = 0,i = 0;
-
+	//LED_Turn();
 	if(USART_GetITStatus(USART3, USART_IT_RXNE) != RESET)  //接收中断(接收到的数据必须是0x0d 0x0a结尾)
 	{
 		Res =USART_ReceiveData(USART3);	//读取接收到的数据
-		//LED1 = !LED1;
 		if(RxNum == 0 && Res == 0xa0)
 		{
+			//帧头
 			RxData[0] = Res;
 			RxNum = 1;
 		}
 		else if(RxNum == 1)
 		{
+			//角度方向
 			RxData[1] = Res;
 			RxNum = 2;
 		}
 		else if(RxNum == 2)
 		{
+			//角度大小
 			RxData[2] = Res;
 			RxNum = 3;
 		}
 		else if(RxNum == 3)
 		{
+			//距离低8位
 			RxData[3] = Res;
 			RxNum = 4;
 		}
 		else if(RxNum == 4)
 		{
+			//距离高8位
 			RxData[4] = Res;
 			RxNum = 5;
 		}
 		else if(RxNum == 5)
 		{
+			//找点的个数
 			RxData[5] = Res;
 			RxNum = 6;
 		}
 		else if(RxNum == 6)
 		{
+			//校验位
 			RxData[6] = Res;
 			for(i=1;i<6;i++)
 				sum += RxData[i];
 			
 			if(sum == RxData[6])
-			{
 				RxNum = 7;
-				LED_Turn();
-			}
+				//LED_Turn();
 		}
 		else if(RxNum == 7 && Res == 0x0a)
 		{
+			//帧尾
 			RxData[RxNum] = Res;
-			//RxNum = 8;
+			LED_Turn();
+			//RxNum = 0;
+			Handle_Data();
 			ReceiveFlag = 1;
 		}
 		else
@@ -150,3 +151,13 @@ void USART3_IRQHandler(void)                	//串口1中断服务程序
 		}
 	} 
 } 
+
+//数据解析函数
+void Handle_Data()
+{
+	CarLoction.AngleDir = RxData[1];
+	CarLoction.AngleValue = RxData[2];
+	CarLoction.FindState = RxData[5];
+	CarLoction.Distance = RxData[4]*256 + RxData[3];
+}
+
